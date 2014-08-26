@@ -59,8 +59,8 @@ class FiniteStateMachine(object):
             self.current_state       # Current State
         ]
         labeled_data = [
-            '{l} : {d}'.format(l=label, d=data)
-            for label, data in zip(labels, data)
+            '{l} : {d}'.format(l=label, d=datum)
+            for label, datum in zip(labels, data)
         ]
         return '\n'.join(labeled_data)
     
