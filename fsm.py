@@ -33,7 +33,7 @@ class FiniteStateMachine(object):
     def __init__(self, file, field_delim=',', record_delim='\n'):
         super(FiniteStateMachine, self).__init__()
         get_records = lambda line : line.strip().split(field_delim)
-        self.records = map(get_records, file.strip().split(record_delim))
+        self.records = map(get_records, file.read().strip().split(record_delim))
         self.parse(self.records)
         self.reset()
     
