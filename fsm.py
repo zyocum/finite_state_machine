@@ -114,12 +114,9 @@ class FiniteStateMachine(object):
         # Iterate over the sequence
         map(self.advance, sequence)
         # Check whether the sequence finished at a terminal or not
-        is_terminated = True if self.current_state in self.terminals else False
+        is_terminated = bool(self.current_state in self.terminals)
         # Print a termination status message
-        if is_terminated:
-            print('Terminated')
-        else:
-            print('Failed to terminate')
+        print('Terminated' if is_terminated else 'Failed to terminate')
 
 class TransitionError(RuntimeError):
     """An exception to be raised when an illegal transition is encountered."""
