@@ -117,18 +117,18 @@ class FiniteStateMachine(object):
         # Print a termination status message
         print('Terminated' if is_terminated else 'Failed to terminate')
 
-class TransitionError(RuntimeError):
-    """An exception to be raised when an illegal transition is encountered."""
+class TransitionError(ValueError):
+    """An exception to be raised if an illegal transition is encountered."""
     def __init__(self, transition):
         super(TransitionError, self).__init__(transition)
 
-class StateError(RuntimeError):
+class StateError(ValueError):
     """An exception to be raised if a transition references an invalid state."""
     def __init__(self, state):
         super(StateError, self).__init__(state)
 
-class SymbolError(RuntimeError):
-    """An exception to be raised when a sequence includes an invalid symbol."""
+class SymbolError(ValueError):
+    """An exception to be raised if a sequence references an invalid symbol."""
     def __init__(self, symbol):
         super(SymbolError, self).__init__(symbol)
 
