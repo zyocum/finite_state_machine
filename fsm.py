@@ -48,16 +48,17 @@ class FiniteStateMachine(object):
             'Transitions',
             'Current State'
         ]
+        listify = lambda x : ', '.join(sorted(x))
         data = [
-            ', '.join(sorted(self.states)),    # States
-            ', '.join(sorted(self.symbols)),   # Symbols
-            self.initial_state,                # Initial State
-            ', '.join(sorted(self.terminals)), # Terminal States
+            listify(self.states),    # States
+            listify(self.symbols),   # Symbols
+            self.initial_state,      # Initial State
+            listify(self.terminals), # Terminal States
             '\n\t'.join([''] + [
                 "'{s}' : {m}".format(s=state, m=mapping)
                 for state, mapping in sorted(self.transitions.items())
-            ]),                                # Transitions
-            self.current_state                 # Current State
+            ]),                      # Transitions
+            self.current_state       # Current State
         ]
         labeled_data = [
             '{l} : {d}'.format(l=label, d=data)
