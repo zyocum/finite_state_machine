@@ -1,9 +1,6 @@
 __author__ = "Zachary Yocum"
 __email__  = "zyocum@brandeis.edu"
 
-import os
-from collections import defaultdict
-
 """A simple implementation of a finite state machine."""
 
 class FiniteStateMachine(object):
@@ -68,6 +65,7 @@ class FiniteStateMachine(object):
     
     def parse(self, records):
         """Parses a CSV file to initialize the FSM."""
+        from collections import defaultdict
         self.states = set(records[0])
         self.symbols = set(records[1])
         self.initial_state = records[2][0]
