@@ -4,8 +4,8 @@ from collections import defaultdict
 class FiniteStateMachine(object):
     """A class representing a finite state machine.
     
-    A finite state machine (FSM) can be loaded from a CSV file formatted as 
-    follows:
+    A finite state machine (FSM) can be initialized from a CSV file formatted 
+    as follows:
     
     Line #      Description
     -----------------------
@@ -75,7 +75,7 @@ class FiniteStateMachine(object):
             self.transitions[from_state][symbol] = to_state
     
     def validate_transition(self, from_state, to_state):
-        """Raises an error if an invalid transition is defined."""
+        """Raises an error if an invalid transition is given."""
         invalid_states = set([from_state, to_state]).difference(self.states)
         if invalid_states:
             raise StateError(', '.join(sorted(invalid_states)))
@@ -94,7 +94,7 @@ class FiniteStateMachine(object):
         # Format a human readable string representation of the transition
         transition = '{f} -{s}-> {t}'.format(f=from_state, s=symbol, t=to_state)
         if to_state:
-            # If the to_state exists print the transition and update the state
+            # If the transition is valid, update the state
             print(transition)
             self.current_state = to_state
         else:
