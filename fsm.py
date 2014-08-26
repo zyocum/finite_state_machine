@@ -30,9 +30,9 @@ class FiniteStateMachine(object):
     8 : C,a,C
     9 : C,b,A"""
     
-    def __init__(self, file):
+    def __init__(self, file, delim=','):
         super(FiniteStateMachine, self).__init__()
-        self.records = map(lambda l : l.strip().split(','), file.readlines())
+        self.records = map(lambda l : l.strip().split(delim), file.readlines())
         self.parse(self.records)
         self.reset()
     
