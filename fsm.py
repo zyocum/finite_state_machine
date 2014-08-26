@@ -7,13 +7,13 @@ class FiniteStateMachine(object):
     A finite state machine (FSM) can be loaded from a CSV file formatted as 
     follows:
     
-    Description      Line #
+    Line #      Description
     -----------------------
-    States                0
-    Symbols               1
-    Initial State         2
-    Terminal States       3
-    Transitions          4+
+    0                States
+    1               Symbols
+    2         Initial State
+    3       Terminal States
+    4+          Transitions
     
     Example
     -----------------------
