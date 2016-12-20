@@ -1,7 +1,11 @@
+#!/usr/bin/env python3
 __author__ = "Zachary Yocum"
 __email__  = "zyocum@brandeis.edu"
 
 """A simple implementation of a finite state machine."""
+
+import csv
+from collections import defaultdict
 
 class FiniteStateMachine(object):
     """A class representing a finite state machine.
@@ -30,60 +34,51 @@ class FiniteStateMachine(object):
     8 : C,a,C
     9 : C,b,A"""
     
-    def __init__(self, file, field_delim=',', record_delim='\n'):
+    def __init__(self, filename):
         super(FiniteStateMachine, self).__init__()
-        get_records = lambda line : line.strip().split(field_delim)
-        self.records = map(get_records, file.read().strip().split(record_delim))
-        self.parse(self.records)
-        self.reset()
+        self.filename = filename
+        try:
+            self.parse(self.filename)
+        except StateError as e:
+            print(e)
+        finally:
+            self.reset()
     
-    def __repr__(self):
-        labels = [
-            'States',
-            'Symbols',
-            'Initial State',
-            'Terminal States',
-            'Transitions',
-            'Current State'
-        ]
-        listify = lambda x : ', '.join(sorted(x))
-        data = [
-            listify(self.states),    # States
-            listify(self.symbols),   # Symbols
-            self.initial_state,      # Initial State
-            listify(self.terminals), # Terminal States
-            '\n\t'.join([''] + [
-                "'{s}' : {m}".format(s=state, m=mapping)
-                for state, mapping in sorted(self.transitions.items())
-            ]),                      # Transitions
-            self.current_state       # Current State
-        ]
-        labeled_data = [
-            '{l} : {d}'.format(l=label, d=datum)
-            for label, datum in zip(labels, data)
-        ]
-        return '\n'.join(labeled_data)
+    def __str__(self):
+        return '\n'.join([
+            'States: {}'.format(sorted(self.states)),
+            'Symbols: {}'.format(sorted(self.symbols)),
+            'Initial State: {}'.format(self.initial_state),
+            'Terminal States: {}'.format(sorted(self.terminals)),
+            'Transitions:\n\t{}'.format(
+                '\n\t'.join('{} -> {}'.format(*t) for t in self.transitions.items())
+            ),
+            'Current State: {}'.format(self.current_state)
+        ])
     
-    def parse(self, records):
+    def load_rows(self, filename):
+        with open(filename, mode='r') as f:
+            reader = csv.reader(f)
+            for row in reader:
+                yield row
+    
+    def parse(self, filename):
         """Parses a CSV file to initialize the FSM."""
-        from collections import defaultdict
-        self.states = set(records[0])
-        self.symbols = set(records[1])
-        self.initial_state = records[2][0]
-        self.terminals = set(records[3])
+        rows = list(self.load_rows(filename))
+        self.states = set(rows[0])
+        self.symbols = set(rows[1])
+        self.initial_state = rows[2][0]
+        self.terminals = set(rows[3])
         self.transitions = defaultdict(dict)
-        # Iterate over the defined transitions
-        for from_state, symbol, to_state in records[4:]:
-            # Validate each transition
+        for from_state, symbol, to_state in rows[4:]:
             self.validate_transition(from_state, to_state)
-            # Populate the transitions dictionary
             self.transitions[from_state][symbol] = to_state
     
     def validate_transition(self, from_state, to_state):
         """Raises an error if an invalid transition is given."""
-        invalid_states = set([from_state, to_state]).difference(self.states)
+        invalid_states = {from_state, to_state}.difference(self.states)
         if invalid_states:
-            raise StateError(', '.join(sorted(invalid_states)))
+            raise StateError(invalid_states)
     
     def reset(self):
         """Resets the current state to the initial state."""
@@ -98,46 +93,57 @@ class FiniteStateMachine(object):
         to_state = self.transitions[from_state].get(symbol)
         # Format a human readable string representation of the transition
         transition = '{f} -{s}-> {t}'.format(f=from_state, s=symbol, t=to_state)
-        if to_state:
-            # If the transition is valid, update the state
-            print(transition)
-            self.current_state = to_state
-        else:
-            # Otherwise the state being transitioned to is invalid
+        print(transition)
+        if to_state is None:
             raise TransitionError(transition)
+        self.current_state = to_state
+            
     
     def run(self, sequence):
         """Advances the state of the FSM by iterating over a symbol sequence."""
-        # Ensure we start the sequence from the initial state
         self.reset()
-        print("Running sequence : '{s}'".format(s=sequence))
-        # Iterate over the sequence
-        map(self.advance, sequence)
-        # Check whether the sequence finished at a terminal or not
-        is_terminated = bool(self.current_state in self.terminals)
-        # Print a termination status message
-        print('Terminated' if is_terminated else 'Failed to terminate')
+        print("Running sequence : {}".format(sequence))
+        try:
+            for symbol in sequence:
+                self.advance(symbol)
+        except TransitionError as e:
+            print(e)
+        finally:
+            if self.current_state in self.terminals:
+                message = 'Terminated'
+            else:
+                message = 'Failed to terminate'
+            print(message)
 
 class TransitionError(ValueError):
     """An exception to be raised if an illegal transition is encountered."""
     def __init__(self, transition):
-        super(TransitionError, self).__init__(transition)
+        message = 'Illegal transition encountered: {}'
+        super(TransitionError, self).__init__(message.format(transition))
 
 class StateError(ValueError):
     """An exception to be raised if a transition references an invalid state."""
-    def __init__(self, state):
-        super(StateError, self).__init__(state)
+    def __init__(self, states):
+        message = 'Undefined state(s) encountered: {}'
+        super(StateError, self).__init__(message.format(states))
 
 class SymbolError(ValueError):
     """An exception to be raised if a sequence references an invalid symbol."""
     def __init__(self, symbol):
-        super(SymbolError, self).__init__(symbol)
+        message = 'Undefined symbol encountered: {}'
+        super(SymbolError, self).__init__(message.format(symbol))
 
 if __name__ == '__main__':
-    with open('fsm_test.csv', 'r') as file:
-        fsm = FiniteStateMachine(file)
-    sequence1 = 'abbaabab'
-    sequence2 = 'abbaab'
+    fsm = FiniteStateMachine('fsm_test.csv')
     print(fsm)
-    fsm.run(sequence1)
-    fsm.run(sequence2)
+    sequences = [
+        'abbaabab',
+        'abbaab',
+        'abc'
+    ]
+    for i, sequence in enumerate(sequences, 1):
+        print('Sequence {}:'.format(i))
+        try:
+            fsm.run(sequence)
+        except Exception as e:
+            print(e)
